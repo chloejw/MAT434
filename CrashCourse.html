@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Chloe Wright">
+<meta name="dcterms.date" content="2025-01-07">
 
 <title>Crash Course in Git, Quarto, and R</title>
 <style>
@@ -72,10 +73,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#working-with-data" id="toc-working-with-data" class="nav-link active" data-scroll-target="#working-with-data">Working with Data</a></li>
+  <li><a href="#exploring-our-data" id="toc-exploring-our-data" class="nav-link" data-scroll-target="#exploring-our-data">Exploring Our Data</a></li>
+  <li><a href="#joining-the-data" id="toc-joining-the-data" class="nav-link" data-scroll-target="#joining-the-data">Joining the Data</a></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -84,17 +95,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 
 
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Author</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Chloe Wright <a href="mailto:chloe.wright4@snhu.edu" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Southern New Hampshire University
+          </p>
+      </div>
+  </div>
 
 <div class="quarto-title-meta">
 
+      
     <div>
-    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-             <p>Chloe Wright </p>
-          </div>
+      <p class="date">January 7, 2025</p>
+    </div>
   </div>
-    
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">January 8, 2025</p>
+    </div>
+  </div>
     
   </div>
   
@@ -103,26 +133,92 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="quarto" class="level2">
-<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <a href="https://quarto.org" class="uri">https://quarto.org</a>.</p>
+<section id="working-with-data" class="level2">
+<h2 class="anchored" data-anchor-id="working-with-data">Working with Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/battedballs.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 13000 Columns: 25
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr   (8): home_team, away_team, batter_team, batter_name, pitcher_name, bb_...
+dbl  (16): bip_id, batter_id, pitcher_id, is_batter_lefty, is_pitcher_lefty,...
+date  (1): game_date
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>parks <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/park_dimensions.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 30 Columns: 9
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): NAME, Cover
+dbl (7): park, LF_Dim, CF_Dim, RF_Dim, LF_W, CF_W, RF_W
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
 </section>
-<section id="running-code" class="level2">
-<h2 class="anchored" data-anchor-id="running-code">Running Code</h2>
-<p>When you click the <strong>Render</strong> button a document will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
+<section id="exploring-our-data" class="level2">
+<h2 class="anchored" data-anchor-id="exploring-our-data">Exploring Our Data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>hits <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
+<pre><code># A tibble: 6 × 25
+  bip_id game_date  home_team away_team batter_team batter_name     pitcher_name
+   &lt;dbl&gt; &lt;date&gt;     &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;       &lt;chr&gt;           &lt;chr&gt;       
+1  61093 2020-09-11 TB        BOS       BOS         bogaerts, xand… snell, blake
+2 117924 2020-08-31 CIN       STL       STL         edman, tommy    lorenzen, m…
+3  84178 2020-09-12 WSH       ATL       WSH         soto, juan      anderson, i…
+4  25265 2020-09-04 CLE       MIL       CLE         lindor, franci… burnes, cor…
+5 117768 2020-08-25 STL       KC        STL         wong, kolten    newberry, j…
+6  54097 2020-08-23 STL       CIN       CIN         ervin, phil     reyes, alex 
+# ℹ 18 more variables: batter_id &lt;dbl&gt;, pitcher_id &lt;dbl&gt;,
+#   is_batter_lefty &lt;dbl&gt;, is_pitcher_lefty &lt;dbl&gt;, bb_type &lt;chr&gt;,
+#   bearing &lt;chr&gt;, pitch_name &lt;chr&gt;, park &lt;dbl&gt;, inning &lt;dbl&gt;,
+#   outs_when_up &lt;dbl&gt;, balls &lt;dbl&gt;, strikes &lt;dbl&gt;, plate_x &lt;dbl&gt;,
+#   plate_z &lt;dbl&gt;, pitch_mph &lt;dbl&gt;, launch_speed &lt;dbl&gt;, launch_angle &lt;dbl&gt;,
+#   is_home_run &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p>You can add options to executable code like this</p>
 <div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>parks <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 4</code></pre>
+<pre><code># A tibble: 6 × 9
+   park NAME                        Cover LF_Dim CF_Dim RF_Dim  LF_W  CF_W  RF_W
+  &lt;dbl&gt; &lt;chr&gt;                       &lt;chr&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1     0 Chase Field                 Roof     328    407    335     8    25     8
+2     1 SunTrust Park               Outd…    335    400    325     6     8    16
+3     2 Oriole Park at Camden Yards Outd…    333    400    318     7     7    21
+4     3 Fenway Park                 Outd…    310    390    302    37     9     3
+5     4 Wrigley Field               Outd…    355    400    353    16    11    16
+6     5 Great American Ballpark     Outd…    328    404    325    12     8     8</code></pre>
 </div>
 </div>
-<p>The <code>echo: false</code> option disables the printing of code (only output is displayed).</p>
+</section>
+<section id="joining-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="joining-the-data">Joining the Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> hits <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(parks, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"park"</span> <span class="ot">=</span> <span class="st">"park"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 
 </main>

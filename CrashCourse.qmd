@@ -1,27 +1,45 @@
 ---
-title: "Crash Course in Git, Quarto, and R"
-author: "Chloe Wright"
+title: Crash Course in Git, Quarto, and R
+author: 
+  - name: Chloe Wright
+    email: chloe.wright4@snhu.edu
+    affiliations: 
+      - name: Southern New Hampshire University
 format: html
-editor: visual
+date: 1/07/2025
+date-modified: today
+date-format: long
+theme: yeti
+toc: true
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## Working with Data
 
 ```{r}
-1 + 1
+library(tidyverse)
+
+hits <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/battedballs.csv")
+parks <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/park_dimensions.csv")
 ```
 
-You can add options to executable code like this
+## Exploring Our Data
 
 ```{r}
-#| echo: false
-2 * 2
+hits |>
+  head() 
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+parks |>
+  head()
+```
+
+## Joining the Data
+
+```{r}
+hits <- hits |>
+  left_join(parks, by = c("park" = "park"))
+```
+
+
+
