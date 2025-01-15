@@ -15,7 +15,7 @@ toc: true
 
 ## Working with Data
 
-###Loading Data
+### Loading Data
 
 ```{r}
 #| message: false
@@ -25,33 +25,31 @@ library(tidyverse)
 library(tidymodels)
 library(skimr)
 library(kableExtra)
+library(patchwork)
 
  hits <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/battedballs.csv")
 parks <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/park_dimensions.csv")
+
 ```
 
 ## Exploring Our Data
 
 ```{r}
 hits |>
-  head() |>
-  kable()
+  head()
 ```
 
 ```{r}
 parks |>
-  head() |>
-  kable()
+  head()
 ```
 
 ## Joining the Data
-
 
 ```{r}
 hits <- hits |>
   left_join(parks, by = c("park" = "park"))
 ```
-
 
 We joined the `hits` and `parks` data together, to obtain a full data set with `r nrow(hits)` rows and `r ncol(hits)` columns.
 
@@ -59,21 +57,19 @@ Initial Exploration
 
 ```{r}
 hits |>
-  head() |>
-  kable()
+  head()
 ```
 
 ```{r}
 hits |>
-  glimpse() |>
-  kable()
+  glimpse()
 ```
 
 Skimming the data set
+
 ```{r}
 hits |>
-  skim() |>
-  kable()
+  skim()
 ```
 
 Split into training and test data
@@ -156,9 +152,55 @@ train |>
     median_angle = median(launch_angle),
     max_angle = max(launch_angle),
     sd_angle = sd(launch_angle)
-  ) |>
-  kable()
+  ) 
 ```
+
+### Data Visualization
+
+```{r}
+train |>
+  ggplot() +
+  geom_bar(aes(x = is_home_run), fill = "lightgreen", color = "black") +
+  labs(
+    title = "Distribution of Home Runs",
+    x = "Is Home Run?",
+    y = "Count"
+  ) 
+```
+
+
+```{r}
+train |>
+  ggplot(aes(x = pitch_mph)) +
+  geom_histogram(aes(y = after_stat(density)),  fill = "lightgreen", color = "black") +
+  geom_density(color = "darkgreen", size = 1) +
+  facet_wrap(~ pitch_name, scales = "free_y")
+  labs(
+    title = "Pitch Speeds by Pitch Type",
+    x = "Pitch Speed",
+    y = "Density"
+  )
+```
+
+```{r}
+train |>
+  mutate(is_home_run = ifelse(is_home_run == 1, "yes", "no")) |>
+  ggplot() +
+  geom_point(aes(x = launch_speed, y = launch_angle, color = is_home_run),
+    alpha = 0.3,
+    size = 2) +
+  scale_color_manual(values = c("hotpink", "darkblue")) +
+  labs(
+    title = "Launch Speed vs. Launch Angle",
+    x = "Launch Speed (mph)",
+    y = "Launch Angle (degrees)"
+  )
+```
+
+
+
+
+
 
 
 
