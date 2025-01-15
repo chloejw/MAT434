@@ -34,15 +34,18 @@ parks <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/ref
 
 ```{r}
 hits |>
-  head() 
+  head() |>
+  kable()
 ```
 
 ```{r}
 parks |>
-  head()
+  head() |>
+  kable()
 ```
 
 ## Joining the Data
+
 
 ```{r}
 hits <- hits |>
@@ -56,18 +59,21 @@ Initial Exploration
 
 ```{r}
 hits |>
-  head() 
+  head() |>
+  kable()
 ```
 
 ```{r}
 hits |>
-  glimpse()
+  glimpse() |>
+  kable()
 ```
 
 Skimming the data set
 ```{r}
 hits |>
-  skim()
+  skim() |>
+  kable()
 ```
 
 Split into training and test data
