@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.555">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -34,7 +34,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -68,6 +68,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="CompAssignment_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="CompAssignment_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="CompAssignment_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="CompAssignment_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="CompAssignment_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
 </head>
@@ -110,8 +112,391 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mat-434-zillow-classification-challenge-sp-25 2/data.csv"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mat-434-zillow-classification-challenge-sp-25 2/comp.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mat-434-zillow-classification-challenge-sp-25 2/comp.csv"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(data) <span class="ot">&lt;-</span> janitor<span class="sc">::</span><span class="fu">make_clean_names</span>(<span class="fu">names</span>(data))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">price_range =</span> <span class="fu">factor</span>(price_range))</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">304</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(data, <span class="at">prop =</span> <span class="fl">0.8</span>, <span class="at">strata =</span> price_range) </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">training</span>(split)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> <span class="fu">testing</span>(split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<section id="statement-of-purpose" class="level2">
+<h2 class="anchored" data-anchor-id="statement-of-purpose">Statement of Purpose</h2>
+<p>What really determines a home’s list price? This project aims to build a predictive model that forecasts the price range of Zillow listings based on key property features. Designed for real estate professionals, data analysts, and market researchers, this model uncovers hidden pricing patterns, offering valuable insights into market trends. By leveraging data-driven predictions, we empower buyers, sellers, and industry experts to make more informed decisions in an ever-evolving real estate landscape.</p>
+</section>
+<section id="executive-summary" class="level2">
+<h2 class="anchored" data-anchor-id="executive-summary">Executive Summary</h2>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+</section>
+<section id="exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+<p>The original data set on the Zillow listings contained 7498 listings and 16 features (variables). We can see the first-few listings’-worth of data printed out below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">city</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">description</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">home_type</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">latitude</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">longitude</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">garage_spaces</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">has_spa</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">year_built</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">num_of_patio_and_porch_features</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">lot_size_sq_ft</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">avg_school_rating</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">median_students_per_teacher</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">num_of_bathrooms</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">num_of_bedrooms</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">price_range</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">austin</td>
+<td style="text-align: left;">7300 Annette Cv, Austin, TX 78724 is a single family home that contains 1,419 sq ft and was built in 2007. It contains 2 bedrooms and 3 bathrooms.</td>
+<td style="text-align: left;">Single Family</td>
+<td style="text-align: right;">30.28529</td>
+<td style="text-align: right;">-97.64630</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">6795.0</td>
+<td style="text-align: right;">3.666667</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">250000-350000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">austin</td>
+<td style="text-align: left;">Extravagant and luxurious 5 bedroom, 4.5 bath property in the beautiful Tarrytown neighborhood. The high-ceilinged main level is window-lined throughout with a clear view of the impressive fenced-in backyard space. In the kitchen custom designed by a French chef, there’s an abundance of drawer space for easy access to all cooking tools. The spacious living area includes a gas fireplace plus indoor/outdoor surround sound speakers. Upstairs the master bedroom has a unique spare space for use as either an office or large spare closet. Each bedroom has soundproof walls between – a perfect floor plan for large families. Use the 5th bedroom as a guest space or even a multi-purpose room. The massive outdoor patio has a fully functioning kitchen, includes an entrance to an indoor half bath, and overlooks the tech-enhanced heated pool. Pool includes a motorized cover that prevents children from entering when unattended – plus, easy maintenance as it keeps out rain and leaves.</td>
+<td style="text-align: left;">Single Family</td>
+<td style="text-align: right;">30.29841</td>
+<td style="text-align: right;">-97.77605</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: right;">2015</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">8276.0</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">650000+</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">austin</td>
+<td style="text-align: left;">HIGH RENTABLE AREA! Beautifully kept duplex located minutes away from great restaurants, shopping, and easy access to I-35 and HWY 183! Each unit features 3 bed 2 bath with an amazing floor plan!</td>
+<td style="text-align: left;">Multiple Occupancy</td>
+<td style="text-align: right;">30.32740</td>
+<td style="text-align: right;">-97.69390</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">1967</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">8886.0</td>
+<td style="text-align: right;">3.333333</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">0-250000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">austin</td>
+<td style="text-align: left;">Great house in the heart of downtown East Austin. Completely remodeled single family home sitting on the back lot 1902 Garden Street just off Chicon. Updated kitchen with stainless appliances, granite counter top, bamboo and vinyl plank flooring. 9 blocks from downtown 5 blocks from Lady Bird Lake. Access through rear on publicly maintained alley with both walking gate and sliding gate to parking area. In the middle of one of the hottest areas on the East side</td>
+<td style="text-align: left;">Single Family</td>
+<td style="text-align: right;">30.25436</td>
+<td style="text-align: right;">-97.72549</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">1920</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2178.0</td>
+<td style="text-align: right;">4.000000</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">250000-350000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">austin</td>
+<td style="text-align: left;">FOR SALE BY OWNER AND FULLY RENOVATED: Wake up each morning to serene canyon, greenbelt views from this completely remodeled home on a large lot in coveted River Place. With no home behind the house, it's very quiet. Walk to Woodlands Park and tennis facilities on Lake Austin, hiking via the River Place Nature Trail and River Place Country Club. H-E-B grocery shopping and restaurants minutes away included Ski Shores on Lake Austin. Home feeds into the award-winning Vandergrift High School in Leander ISD. Five bedrooms with the master and one guest room on the first floor. Four full bathrooms. 3,615 sq ft. Two living areas plus large office that could also be a third living area. Dining room plus eat-in kitchen. All-new modern window shades. Three-car garage. BigAss smart ceiling fans, Ecobee smart thermostats for updated Trane A/C, Philips smart lights and LeGrand switches &amp; nightlights. Two large walk-in Texas basements plus attic storage in the house and garage. Two water tanks and two HVAC systems in the attic. Fully remodeled 2019-2020. Painted inside and outside. New roof in 2016. Pool, patio and pergola CAD plans included. 2019 taxes were $16,369. HOA is $22 a month. We need to move closer to our elderly parents. Our loss is your gain. We just finished this amazing remodel, and the design continues to be featured in national magazines. If you would like to see thi</td>
+<td style="text-align: left;">home, call 502-938</td>
+<td style="text-align: right;">4800. It</td>
+<td style="text-align: right;">s FOR SALE</td>
+<td style="text-align: right;">BY OWNER. Than</td>
+<td style="text-align: left;">you. |S</td>
+<td style="text-align: right;">ngle Family</td>
+<td style="text-align: right;">| 30.36166| -97.85528|</td>
+<td style="text-align: right;">0|FALSE</td>
+<td style="text-align: right;">| 1999|</td>
+<td style="text-align: right;">0|</td>
+<td style="text-align: right;">12196.8|</td>
+<td style="text-align: right;">7.000000|</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">austin</td>
+<td style="text-align: left;">Under market pricing!!! Owner wants to move it quickly! He is willing to go well under market value for December contract! This 3 bedroom condo is located right off Payton Gin Rd about 1/2 mile from 183. It's part of the well sought after Orange Grove Condominium community. It is close to MoPac/I 35 and the Domain Shopping area. Recently upgraded with newer paint, laminate and vinyl flooring. Recent carpet replaced in the Master Bedroom and the hall/stairs as well.</td>
+<td style="text-align: left;">Condo</td>
+<td style="text-align: right;">30.36236</td>
+<td style="text-align: right;">-97.71042</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">1974</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">400.0</td>
+<td style="text-align: right;">4.000000</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">0-250000</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>The Zillow listings data was split into a collection of 5996 training observations and 1502 test observations to validate our final model’s performance. Care was taken to ensure that properties from each price range category are proportionally represented across the training and test sets, preserving the overall distribution of home prices.</p>
+<p>Since our goal is to understand and gain insight as to what the price range of a Zillow listing is, we will start by taking a closer look at the distribution of the different price ranges.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">fill =</span> price_range)) <span class="sc">+</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0-250000"</span> <span class="ot">=</span> <span class="st">"lightgreen"</span>, <span class="st">"250000-350000"</span> <span class="ot">=</span> <span class="st">"orange"</span>, </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"350000-450000"</span> <span class="ot">=</span> <span class="st">"yellow"</span>, <span class="st">"450000-650000"</span> <span class="ot">=</span> <span class="st">"lightblue"</span>, </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"650000+"</span> <span class="ot">=</span> <span class="st">"pink"</span>)) <span class="sc">+</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Listing Price Ranges"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Price Range"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of Listings"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CompAssignment_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We will now look at the distribution of the remaining categorical variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> city, <span class="at">fill =</span> city)) <span class="sc">+</span> </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"City"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">""</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Count"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>)) </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> home_type, <span class="at">fill =</span> home_type)) <span class="sc">+</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Home Type"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Count"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">""</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))  </span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> has_spa, <span class="at">fill =</span> has_spa)) <span class="sc">+</span> </span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Has Spa"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">""</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Count"</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>(p1 <span class="sc">+</span> p4) <span class="sc">/</span> (p2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CompAssignment_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The visual analysis of the Zillow listings dataset reveals several key trends. The majority of listings are concentrated in Austin, with very few properties available in other cities. Additionally, nearly all listings do not have a spa, making it a relatively uncommon feature. In terms of home types, most properties are Single Family homes, while condos and townhouses make up only a small portion of the dataset. Importantly, we confirmed that none of the plots contain missing values, ensuring that the displayed data is complete and reliable for further analysis.</p>
+<p>Let’s continue on to view the distributions of the numerical predictors available to us. We’ll take a look at the distribution of (<code>lot_size_sq_ft</code>), (<code>avg_school_rating</code>), (<code>median_students_per_teacher</code>), (<code>num_of_bathrooms</code>), (<code>num_of_bedrooms</code>), and (<code>year_built</code>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>train <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log10</span>(lot_size_sq_ft)), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">bins =</span> <span class="dv">30</span>) <span class="sc">+</span>  </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Log-Transformed Lot Size"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Log10(Lot Size in Sq. Ft.)"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Count"</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CompAssignment_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We applied a log transformation to the lot_size_sq_ft variable to address its right-skewed distribution, where most properties had relatively small lot sizes, but a few extreme values distorted the scale. By using (<code>log10(lot_size_sq_ft)</code>), we compressed the range of values, making the data more symmetrical and normally distributed. This transformation improves interpretability, allowing us to better analyze trends and relationships. The resulting normal distribution indicates that the transformation successfully relaxed the impact of outliers, making (<code>lot_size_sq_ft</code>) more suitable for statistical modeling and predictive analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>n1 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> avg_school_rating), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">bins =</span> <span class="dv">20</span>) <span class="sc">+</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Average School Ratings"</span>, </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Average School Rating"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>n2 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> median_students_per_teacher), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">bins =</span> <span class="dv">20</span>) <span class="sc">+</span> </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Median Students per Teacher"</span>, </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Median Students per Teacher"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>n3 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> num_of_bathrooms), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">bins =</span> <span class="dv">20</span>) <span class="sc">+</span> </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Number of Bathrooms"</span>, </span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Bathrooms"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>n4 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> num_of_bedrooms), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">bins =</span> <span class="dv">20</span>) <span class="sc">+</span> </span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Number of Bedrooms"</span>, </span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Bedrooms"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>n5 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> year_built), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">bins =</span> <span class="dv">20</span>) <span class="sc">+</span> </span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Year Built"</span>, </span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year Built"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>(n1 <span class="sc">+</span> n2) <span class="sc">/</span> (n3 <span class="sc">+</span> n4) <span class="sc">/</span> (n5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CompAssignment_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The top-left graph reveals a bimodal distribution in average school ratings, with peaks around 4.5 and 7, indicating that ratings tend to cluster around these two values rather than being evenly distributed. This pattern suggests a possible bias in the data, likely influenced by an underlying factor such as differences between public and private schools. The top-right graph exhibits a left-skewed distribution, suggesting that most schools have higher student-to-teacher ratios. In contrast, the middle-left and middle-right graphs are both right-skewed, indicating that most listings have a lower number of bathrooms (around 2-3) and bedrooms (around 3-4), respectively. Lastly, the bottom graph is left-skewed, suggesting that a majority of the homes in the dataset are relatively new, built between 1950 and 2020.</p>
+<p>Now that we understand the individual distributions of the variables, its time to look at how these predictors are associated with out response variable (price range). We’ll begin by looking for associations between price range and the categorical variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>p_city <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> city,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">fill =</span> price_range),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="st">"dodge"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"City and Price Range"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Count"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">""</span>)  </span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>p_spa <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> has_spa,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>               <span class="at">fill =</span> price_range),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span> </span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Spa and Price Range"</span>,</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">""</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Count"</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>p_hometype <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> home_type,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>               <span class="at">fill =</span> price_range),</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="st">"dodge"</span>,</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>           <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Home Type and Price Range"</span>,</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Count"</span>,</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">""</span>)  </span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>(p_city <span class="sc">+</span> p_spa) <span class="sc">/</span> (p_hometype)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CompAssignment_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The top-left graph reveals that the majority of listings are located in Austin, with most falling within the three middle price ranges, rather than at the extreme high or low ends. The top-right graph indicates that homes without a spa also tend to cluster within these middle price ranges, suggesting that spas are not a defining factor in mid-range home pricing. However, when a home does have a spa, it is most likely to be in the highest price range, with the likelihood decreasing as the price range drops. The bottom graph confirms that Single Family homes are the most common property type, again showing a strong presence in the three middle price ranges, while condos are the second most common and are predominantly found in the lowest price range. This suggests that condos are generally more affordable, whereas spa-equipped homes are more likely to be luxury properties.</p>
+<p>Now we’ll consider how the numerical features may be associated with the <code>price_range</code> of the listings.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">y =</span> <span class="fu">log10</span>(lot_size_sq_ft)), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"skyblue"</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">y =</span> avg_school_rating), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"pink"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>m3 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">y =</span> median_students_per_teacher), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"lightyellow"</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>m4 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">y =</span> num_of_bathrooms), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"coral"</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>m5 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">y =</span> num_of_bedrooms), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"lightgreen"</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>m6 <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> </span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> price_range, <span class="at">y =</span> year_built), <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">"tan"</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>(m1 <span class="sc">+</span> m2) <span class="sc">/</span> (m3 <span class="sc">+</span> m4) <span class="sc">/</span> (m5 <span class="sc">+</span> m6)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CompAssignment_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The top-left graph reveals that larger lot sizes are associated with higher price ranges. Since the data was skewed, a log transformation (log10(lot_size_sq_ft)) was applied to improve visualization and highlight differences more clearly. The top-right graph indicates that higher-priced homes tend to have higher average school ratings, suggesting that expensive properties are located in areas with better schools.</p>
+<p>The middle-left graph shows little variation in student-to-teacher ratios across price ranges, with the highest ratio appearing in the second-highest price category. This suggests that class sizes remain relatively consistent regardless of home price. The middle-right graph demonstrates that the number of bathrooms increases with price, as indicated by a rising median line across price ranges, confirming that bathroom count is strongly correlated with home price.</p>
+<p>The bottom-left graph further supports this trend, showing that homes with more bedrooms are generally priced higher. Lastly, the bottom-right graph suggests that newer homes tend to be in higher price ranges, as more expensive listings have higher median construction years, indicating that recently built homes are more likely to be valued at a premium.</p>
+<p>As a result of this exploratory analysis, we have identified several key insights that will inform our model construction phase. Firstly, home listings are not evenly distributed across price ranges, with most properties falling within the middle price categories rather than the extreme high or low ends. Many of the numerical features, such as lot size and number of bathrooms, exhibit strong right-skewness, requiring transformations like log scaling to improve interpretability. The variable most strongly associated with higher price ranges appears to be lot size, as larger properties tend to be more expensive. Other factors, such as average school rating, number of bedrooms, and presence of a spa, also show notable correlations with price but with varying degrees of impact.</p>
+</section>
 
 </main>
 <!-- /main column -->
@@ -150,18 +535,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -193,7 +567,29 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp('/' + window.location.host + '/');
@@ -201,7 +597,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {

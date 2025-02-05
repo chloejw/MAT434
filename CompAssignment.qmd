@@ -16,5 +16,233 @@ library(patchwork)
 
 data <- read_csv("mat-434-zillow-classification-challenge-sp-25 2/data.csv")
 comp <- read_csv("mat-434-zillow-classification-challenge-sp-25 2/comp.csv")
+
+names(data) <- janitor::make_clean_names(names(data))
+
+data <- data %>%
+  mutate(price_range = factor(price_range))
+
+set.seed(304)
+split <- initial_split(data, prop = 0.8, strata = price_range) 
+
+train <- training(split)
+test <- testing(split)
 ```
+
+
+
+## Statement of Purpose
+
+What really determines a home's list price? This project aims to build a predictive model that forecasts the price range of Zillow listings based on key property features. Designed for real estate professionals, data analysts, and market researchers, this model uncovers hidden pricing patterns, offering valuable insights into market trends. By leveraging data-driven predictions, we empower buyers, sellers, and industry experts to make more informed decisions in an ever-evolving real estate landscape.
+
+## Executive Summary
+
+## Introduction
+
+## Exploratory Data Analysis
+
+The original data set on the Zillow listings contained `r data %>% nrow()` listings and `r data %>% ncol()` features (variables). We can see the first-few listings'-worth of data printed out below.
+
+```{r}
+data |>
+  head() |>
+  kable() |>
+  kable_styling(full_width = FALSE)
+```
+The Zillow listings data was split into a collection of `r train %>% nrow()` training observations and `r test %>% nrow()` test observations to validate our final model’s performance. Care was taken to ensure that properties from each price range category are proportionally represented across the training and test sets, preserving the overall distribution of home prices.
+
+
+Since our goal is to understand and gain insight as to what the price range of a Zillow listing is, we will start by taking a closer look at the distribution of the different price ranges. 
+
+```{r}
+train %>%
+  ggplot() + 
+  geom_bar(aes(x = price_range, fill = price_range)) + 
+  scale_fill_manual(values = c("0-250000" = "lightgreen", "250000-350000" = "orange", 
+                               "350000-450000" = "yellow", "450000-650000" = "lightblue", 
+                               "650000+" = "pink")) +
+  labs(title = "Distribution of Listing Price Ranges",
+       x = "Price Range",
+       y = "Number of Listings")
+```
+
+We will now look at the distribution of the remaining categorical variables.
+
+```{r}
+p1 <- train %>%
+  ggplot() + 
+  geom_bar(aes(x = city, fill = city)) + 
+  labs(
+    title = "City",
+    x = "",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+p2 <- train %>%
+  ggplot() + 
+  geom_bar(aes(x = home_type, fill = home_type)) +
+  labs(
+    title = "Home Type",
+    y = "Count",
+    x = ""
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+p4 <- train %>%
+  ggplot() + 
+  geom_bar(aes(x = has_spa, fill = has_spa)) + 
+  labs(
+    title = "Has Spa",
+    x = "",
+    y = "Count"
+  ) 
+
+
+(p1 + p4) / (p2)
+```
+
+The visual analysis of the Zillow listings dataset reveals several key trends. The majority of listings are concentrated in Austin, with very few properties available in other cities. Additionally, nearly all listings do not have a spa, making it a relatively uncommon feature. In terms of home types, most properties are Single Family homes, while condos and townhouses make up only a small portion of the dataset. Importantly, we confirmed that none of the plots contain missing values, ensuring that the displayed data is complete and reliable for further analysis.
+
+Let’s continue on to view the distributions of the numerical predictors available to us. We’ll take a look at the distribution of (`lot_size_sq_ft`), (`avg_school_rating`), (`median_students_per_teacher`), (`num_of_bathrooms`), (`num_of_bedrooms`), and (`year_built`).
+
+```{r}
+train %>%
+  ggplot() + 
+  geom_histogram(aes(x = log10(lot_size_sq_ft)), color = "black", 
+                 fill = "skyblue", bins = 30) +  
+  labs(
+    title = "Log-Transformed Lot Size",
+    x = "Log10(Lot Size in Sq. Ft.)",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+We applied a log transformation to the lot_size_sq_ft variable to address its right-skewed distribution, where most properties had relatively small lot sizes, but a few extreme values distorted the scale. By using (`log10(lot_size_sq_ft)`), we compressed the range of values, making the data more symmetrical and normally distributed. This transformation improves interpretability, allowing us to better analyze trends and relationships. The resulting normal distribution indicates that the transformation successfully relaxed the impact of outliers, making (`lot_size_sq_ft`) more suitable for statistical modeling and predictive analysis.
+
+```{r}
+n1 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = avg_school_rating), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Average School Ratings", 
+       x = "Average School Rating", y = "Count") +
+  theme_minimal()
+
+n2 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = median_students_per_teacher), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Median Students per Teacher", 
+       x = "Median Students per Teacher", y = "Count") +
+  theme_minimal()
+
+n3 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = num_of_bathrooms), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Number of Bathrooms", 
+       x = "Number of Bathrooms", y = "Count") +
+  theme_minimal()
+
+n4 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = num_of_bedrooms), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Number of Bedrooms", 
+       x = "Number of Bedrooms", y = "Count") +
+  theme_minimal()
+
+n5 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = year_built), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Year Built", 
+       x = "Year Built", y = "Count") +
+  theme_minimal()
+
+
+(n1 + n2) / (n3 + n4) / (n5)
+```
+
+The top-left graph reveals a bimodal distribution in average school ratings, with peaks around 4.5 and 7, indicating that ratings tend to cluster around these two values rather than being evenly distributed. This pattern suggests a possible bias in the data, likely influenced by an underlying factor such as differences between public and private schools. The top-right graph exhibits a left-skewed distribution, suggesting that most schools have higher student-to-teacher ratios. In contrast, the middle-left and middle-right graphs are both right-skewed, indicating that most listings have a lower number of bathrooms (around 2-3) and bedrooms (around 3-4), respectively. Lastly, the bottom graph is left-skewed, suggesting that a majority of the homes in the dataset are relatively new, built between 1950 and 2020.
+
+Now that we understand the individual distributions of the variables, its time to look at how these predictors are associated with out response variable (price range). We’ll begin by looking for associations between price range and the categorical variables.
+
+```{r}
+p_city <- train %>%
+  ggplot() + 
+  geom_bar(aes(y = city,
+               fill = price_range),
+           position = "dodge",
+           show.legend = FALSE) + 
+  labs(title = "City and Price Range",
+       x = "Count",
+       y = "")  
+
+p_spa <- train %>%
+  ggplot() + 
+  geom_bar(aes(x = has_spa,
+               fill = price_range),
+           position = "dodge") + 
+  labs(title = "Spa and Price Range",
+       x = "",
+       y = "Count")
+
+p_hometype <- train %>%
+  ggplot() + 
+  geom_bar(aes(y = home_type,
+               fill = price_range),
+           position = "dodge",
+           show.legend = FALSE) + 
+  labs(title = "Home Type and Price Range",
+       x = "Count",
+       y = "")  
+
+(p_city + p_spa) / (p_hometype)
+```
+
+The top-left graph reveals that the majority of listings are located in Austin, with most falling within the three middle price ranges, rather than at the extreme high or low ends. The top-right graph indicates that homes without a spa also tend to cluster within these middle price ranges, suggesting that spas are not a defining factor in mid-range home pricing. However, when a home does have a spa, it is most likely to be in the highest price range, with the likelihood decreasing as the price range drops. The bottom graph confirms that Single Family homes are the most common property type, again showing a strong presence in the three middle price ranges, while condos are the second most common and are predominantly found in the lowest price range. This suggests that condos are generally more affordable, whereas spa-equipped homes are more likely to be luxury properties.
+
+Now we’ll consider how the numerical features may be associated with the `price_range` of the listings.
+
+```{r}
+m1 <- train %>% 
+ggplot() +
+  geom_boxplot(aes(x = price_range, y = log10(lot_size_sq_ft)), color = "black", 
+                 fill = "skyblue")
+
+m2 <- train %>% 
+ggplot() +
+  geom_boxplot(aes(x = price_range, y = avg_school_rating), color = "black", 
+                 fill = "pink")
+
+m3 <- train %>% 
+ggplot() +
+  geom_boxplot(aes(x = price_range, y = median_students_per_teacher), color = "black", 
+                 fill = "lightyellow")
+
+m4 <- train %>% 
+ggplot() +
+  geom_boxplot(aes(x = price_range, y = num_of_bathrooms), color = "black", 
+                 fill = "coral")
+
+m5 <- train %>% 
+ggplot() +
+  geom_boxplot(aes(x = price_range, y = num_of_bedrooms), color = "black", 
+                 fill = "lightgreen")
+
+m6 <- train %>% 
+ggplot() +
+  geom_boxplot(aes(x = price_range, y = year_built), color = "black", 
+                 fill = "tan")
+
+(m1 + m2) / (m3 + m4) / (m5 + m6)
+```
+
+The top-left graph reveals that larger lot sizes are associated with higher price ranges. Since the data was skewed, a log transformation (log10(lot_size_sq_ft)) was applied to improve visualization and highlight differences more clearly. The top-right graph indicates that higher-priced homes tend to have higher average school ratings, suggesting that expensive properties are located in areas with better schools.
+
+The middle-left graph shows little variation in student-to-teacher ratios across price ranges, with the highest ratio appearing in the second-highest price category. This suggests that class sizes remain relatively consistent regardless of home price. The middle-right graph demonstrates that the number of bathrooms increases with price, as indicated by a rising median line across price ranges, confirming that bathroom count is strongly correlated with home price.
+
+The bottom-left graph further supports this trend, showing that homes with more bedrooms are generally priced higher. Lastly, the bottom-right graph suggests that newer homes tend to be in higher price ranges, as more expensive listings have higher median construction years, indicating that recently built homes are more likely to be valued at a premium.
+
+As a result of this exploratory analysis, we have identified several key insights that will inform our model construction phase. Firstly, home listings are not evenly distributed across price ranges, with most properties falling within the middle price categories rather than the extreme high or low ends. Many of the numerical features, such as lot size and number of bathrooms, exhibit strong right-skewness, requiring transformations like log scaling to improve interpretability. The variable most strongly associated with higher price ranges appears to be lot size, as larger properties tend to be more expensive. Other factors, such as average school rating, number of bedrooms, and presence of a spa, also show notable correlations with price but with varying degrees of impact.
+
+
+
 
