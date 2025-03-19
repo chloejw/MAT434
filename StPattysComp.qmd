@@ -1,0 +1,214 @@
+---
+title: "Kiss or Miss"
+author: "Chloe Wright"
+format: html
+editor: visual
+---
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+library(patchwork)
+
+data <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/blarney_data.csv")
+comp <- read_csv("https://raw.githubusercontent.com/agmath/agmath.github.io/refs/heads/master/data/classification/blarney_comp.csv")
+
+names(data) <- janitor::make_clean_names(names(data))
+
+names(comp) <- janitor::make_clean_names(names(comp))
+
+set.seed(304)
+split <- initial_split(data, prop = 0.8) 
+
+train <- training(split)
+test <- testing(split)
+
+unregister <- function() {
+  env <- foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
+
+train_folds <- vfold_cv(train, v = 10)
+```
+```{r}
+train %>%
+  ggplot() + 
+  geom_bar(aes(x = kissed)) + 
+  labs(title = "Distribution of Transported Passengers",
+       x = "Interdimensional Transport Status",
+       y = "Count") + 
+  theme_bw()
+```
+
+```{r}
+p_home <- train %>%
+  ggplot() + 
+  geom_bar(aes(y = nationality,
+               fill = kissed),
+           position = "dodge",
+           show.legend = FALSE) + 
+  labs(title = "Nationality and Kissed",
+       x = "Count",
+       y = "") + 
+  theme_bw()
+
+p_cryo <- train %>%
+  ggplot() + 
+  geom_bar(aes(x = lip_balm,
+               fill = kissed),
+           position = "dodge") + 
+  labs(title = "Weather and Kissed",
+       x = "",
+       y = "Count") + 
+  theme_bw()
+
+
+(p_home + p_cryo)
+```
+
+```{r}
+n1 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = avg_school_rating), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Average School Ratings", 
+       x = "Average School Rating", y = "Count") +
+  theme_minimal()
+
+n2 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = median_students_per_teacher), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Median Students per Teacher", 
+       x = "Median Students per Teacher", y = "Count") +
+  theme_minimal()
+
+n3 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = num_of_bathrooms), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Number of Bathrooms", 
+       x = "Number of Bathrooms", y = "Count") +
+  theme_minimal()
+
+n4 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = num_of_bedrooms), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Number of Bedrooms", 
+       x = "Number of Bedrooms", y = "Count") +
+  theme_minimal()
+
+n5 <- train %>% 
+ggplot() + 
+  geom_histogram(aes(x = year_built), color = "black", fill = "skyblue", bins = 20) + 
+  labs(title = "Distribution of Year Built", 
+       x = "Year Built", y = "Count") +
+  theme_minimal()
+
+
+(n1 + n2) / (n3 + n4) / (n5)
+```
+
+```{r}
+dt_spec <- decision_tree() %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+dt_rec <-recipe(kissed ~ weather + lip_balm + filmed + fear_of_heights + top_o_mornin_count + beer_oz + grip_strength, data = train) %>%
+  step_normalize(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors())
+
+dt_wf <- workflow() %>% 
+  add_model(dt_spec) %>%
+  add_recipe(dt_rec)
+```
+
+```{r}
+n_cores <- parallel::detectCores()
+cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
+doParallel::registerDoParallel(cl)
+
+tictoc::tic()
+
+dt_cv_results <- dt_wf %>%
+  fit_resamples(
+    resamples = train_folds,
+    metrics = metric_set(accuracy, mn_log_loss)
+  )
+
+tictoc::toc()
+
+doParallel::stopImplicitCluster()
+unregister()
+
+dt_cv_results %>%
+  collect_metrics()
+```
+
+## Decision Tree with Tuning
+
+```{r}
+dt_tune_spec <- decision_tree(min_n = tune(), tree_depth = tune(), cost_complexity = tune()) %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+dt_tune_rec <- recipe(kissed ~ weather + lip_balm + filmed + fear_of_heights + top_o_mornin_count + beer_oz + grip_strength, data = train) %>%
+  step_impute_mode(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors()) %>% 
+  step_zv(all_predictors()) %>% 
+  step_normalize(all_numeric_predictors())
+
+dt_tune_wf <- workflow() %>% 
+  add_model(dt_tune_spec) %>%
+  add_recipe(dt_tune_rec)
+```
+
+```{r}
+n_cores <- parallel::detectCores()
+cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
+doParallel::registerDoParallel(cl)
+
+tictoc::tic()
+
+dt_tune_cv_results <- dt_tune_wf %>%
+  tune_grid(
+    resamples = train_folds,
+    grid = 12,
+    initial = 5,
+    metrics = metric_set(mn_log_loss),
+    control = control_grid(parallel_over = "everything")
+  )
+
+tictoc::toc()
+
+doParallel::stopImplicitCluster()
+unregister()
+
+dt_tune_cv_results %>%
+  collect_metrics()
+```
+
+```{r}
+dt_tune_cv_results %>% 
+  show_best(n = 10)
+```
+
+```{r}
+dt_best_params <- dt_tune_cv_results %>%
+  select_best(metric = "mn_log_loss")
+
+dt_best_wf <- dt_tune_wf %>%
+  finalize_workflow(dt_best_params)
+
+dt_best_fit <- dt_best_wf %>%
+  fit(train)
+```
+
+```{r}
+submission <- dt_best_fit %>%
+  augment(comp) %>%
+  rename(kissed = .pred_yes) %>%
+  select(id, kissed)
+
+write.csv(submission, "submission.csv", row.names = FALSE)
+```

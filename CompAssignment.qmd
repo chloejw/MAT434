@@ -1,9 +1,14 @@
 ---
 title: "Competition Assignment"
-author: "Chloe Wright"
+author: 
+- name: Chloe Wright
+- email: chloe.wright4@snhu.edu
+affiliation: 
+ - name: Southern New Hampshire University
 format: html
 editor: visual
 theme: yeti
+code-fold: true
 ---
 
 ```{r}
@@ -19,17 +24,24 @@ comp <- read_csv("mat-434-zillow-classification-challenge-sp-25 2/comp.csv")
 
 names(data) <- janitor::make_clean_names(names(data))
 
+names(comp) <- janitor::make_clean_names(names(comp))
+
 data <- data %>%
   mutate(price_range = factor(price_range))
 
 set.seed(304)
-split <- initial_split(data, prop = 0.8, strata = price_range) 
+split <- initial_split(data, prop = 0.8) 
 
 train <- training(split)
 test <- testing(split)
+
+unregister <- function() {
+  env <- foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
+
+train_folds <- vfold_cv(train, v = 10)
 ```
-
-
 
 ## Statement of Purpose
 
@@ -49,10 +61,10 @@ data |>
   kable() |>
   kable_styling(full_width = FALSE)
 ```
+
 The Zillow listings data was split into a collection of `r train %>% nrow()` training observations and `r test %>% nrow()` test observations to validate our final model’s performance. Care was taken to ensure that properties from each price range category are proportionally represented across the training and test sets, preserving the overall distribution of home prices.
 
-
-Since our goal is to understand and gain insight as to what the price range of a Zillow listing is, we will start by taking a closer look at the distribution of the different price ranges. 
+Since our goal is to understand and gain insight as to what the price range of a Zillow listing is, we will start by taking a closer look at the distribution of the different price ranges.
 
 ```{r}
 train %>%
@@ -118,6 +130,7 @@ train %>%
   ) +
   theme_minimal()
 ```
+
 We applied a log transformation to the lot_size_sq_ft variable to address its right-skewed distribution, where most properties had relatively small lot sizes, but a few extreme values distorted the scale. By using (`log10(lot_size_sq_ft)`), we compressed the range of values, making the data more symmetrical and normally distributed. This transformation improves interpretability, allowing us to better analyze trends and relationships. The resulting normal distribution indicates that the transformation successfully relaxed the impact of outliers, making (`lot_size_sq_ft`) more suitable for statistical modeling and predictive analysis.
 
 ```{r}
@@ -243,6 +256,197 @@ The bottom-left graph further supports this trend, showing that homes with more 
 
 As a result of this exploratory analysis, we have identified several key insights that will inform our model construction phase. Firstly, home listings are not evenly distributed across price ranges, with most properties falling within the middle price categories rather than the extreme high or low ends. Many of the numerical features, such as lot size and number of bathrooms, exhibit strong right-skewness, requiring transformations like log scaling to improve interpretability. The variable most strongly associated with higher price ranges appears to be lot size, as larger properties tend to be more expensive. Other factors, such as average school rating, number of bedrooms, and presence of a spa, also show notable correlations with price but with varying degrees of impact.
 
+## Model Construction
 
+```{r}
+knn_tune_spec <- nearest_neighbor(neighbors = tune()) %>%
+  set_engine("kknn") %>%
+  set_mode("classification")
 
+knn_rec <- recipe(price_range ~ ., data = train) %>%
+  step_rm(description) %>%
+  step_normalize(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors())
+
+knn_tune_wf <- workflow() %>%
+  add_model(knn_tune_spec) %>%
+  add_recipe(knn_rec)
+```
+
+```{r}
+n_cores <- parallel::detectCores()
+cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
+doParallel::registerDoParallel(cl)
+
+tictoc::tic()
+
+knn_tune_results <- knn_tune_wf %>%
+  tune_bayes(
+    resamples = train_folds,
+    metrics = metric_set(mn_log_loss),
+    initial = 5,
+    control = control_bayes(parallel_over = "everything")
+  )
+
+tictoc::toc()
+
+doParallel::stopImplicitCluster()
+unregister()
+
+knn_tune_results %>%
+  collect_metrics()
+
+```
+```{r}
+knn_best_params <- knn_tune_results %>%
+  select_best(metric = "mn_log_loss")
+
+knn_best_wf <- knn_tune_wf %>%
+  finalize_workflow(knn_best_params)
+
+knn_best_fit <- knn_best_wf %>%
+  fit(train)
+```
+
+```{r}
+knn_best_fit %>% 
+  augment(train) %>% 
+  mutate(price_range = as.factor(price_range)) %>% 
+  mn_log_loss(price_range, starts_with(".pred"), - .pred_class)
+```
+```{r}
+submission_1 <- knn_best_fit %>% 
+  augment(comp) %>% 
+  rename(
+    prob_A = ".pred_0-250000",
+    prob_B = ".pred_250000-350000",
+    prob_C = ".pred_350000-450000",
+    prob_D = ".pred_450000-650000",
+    prob_E = ".pred_650000+"
+  ) %>% 
+  select(id, starts_with("prob"))
+
+write.csv(submission_1, "submission1.csv", row.names = FALSE)
+```
+
+```{r}
+dt_spec <- decision_tree() %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+dt_rec <- recipe(price_range ~ ., data = train) %>%
+  step_rm(description) %>%
+  step_normalize(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors())
+
+dt_wf <- workflow() %>% 
+  add_model(dt_spec) %>%
+  add_recipe(dt_rec)
+```
+
+```{r}
+n_cores <- parallel::detectCores()
+cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
+doParallel::registerDoParallel(cl)
+
+tictoc::tic()
+
+dt_cv_results <- dt_wf %>%
+  fit_resamples(
+    resamples = train_folds,
+    metrics = metric_set(accuracy, mn_log_loss)
+  )
+
+tictoc::toc()
+
+doParallel::stopImplicitCluster()
+unregister()
+
+dt_cv_results %>%
+  collect_metrics()
+```
+## Decision Tree with Tuning
+
+```{r}
+dt_tune_spec <- decision_tree(min_n = tune(), tree_depth = tune()) %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+dt_tune_rec <- recipe(price_range ~ ., data = train) %>%
+   step_rm(description) %>%
+  step_rm(id) %>% 
+  step_impute_mode(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors())
+
+dt_tune_wf <- workflow() %>% 
+  add_model(dt_tune_spec) %>%
+  add_recipe(dt_tune_rec)
+```
+
+```{r}
+n_cores <- parallel::detectCores()
+cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
+doParallel::registerDoParallel(cl)
+
+tictoc::tic()
+
+dt_tune_cv_results <- dt_tune_wf %>%
+  tune_bayes(
+    resamples = train_folds,
+    metrics = metric_set(mn_log_loss),
+    initial = 5,
+    control = control_bayes(parallel_over = "everything")
+  )
+
+tictoc::toc()
+
+doParallel::stopImplicitCluster()
+unregister()
+
+dt_tune_cv_results %>%
+  collect_metrics()
+```
+
+```{r}
+dt_tune_cv_results %>% 
+  show_best(n = 10)
+```
+
+```{r}
+dt_best_params <- dt_tune_cv_results %>%
+  select_best(metric = "mn_log_loss")
+
+dt_best_wf <- dt_tune_wf %>%
+  finalize_workflow(dt_best_params)
+
+dt_best_fit <- dt_best_wf %>%
+  fit(train)
+```
+
+```{r}
+dt_best_fit %>% 
+  augment(train) %>% 
+  mutate(price_range = as.factor(price_range)) %>% 
+  mn_log_loss(price_range, starts_with(".pred"), - .pred_class)
+```
+```{r}
+submission_2 <- dt_best_fit %>% 
+  augment(comp) %>% 
+  rename(
+    prob_A = ".pred_0-250000",
+    prob_B = ".pred_250000-350000",
+    prob_C = ".pred_350000-450000",
+    prob_D = ".pred_450000-650000",
+    prob_E = ".pred_650000+"
+  ) %>% 
+  select(id, starts_with("prob"))
+
+write.csv(submission_2, "submission2.csv", row.names = FALSE)
+  
+```
 
