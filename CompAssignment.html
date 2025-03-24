@@ -533,8 +533,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>knn_rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(price_range <span class="sc">~</span> ., <span class="at">data =</span> train) <span class="sc">%&gt;%</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_rm</span>(description) <span class="sc">%&gt;%</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric_predictors</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">step_rm</span>(description) <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_rm</span>(id) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_mode</span>(<span class="fu">all_nominal_predictors</span>()) <span class="sc">%&gt;%</span></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>()) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_median</span>(<span class="fu">all_numeric_predictors</span>())</span>
@@ -544,6 +544,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(knn_rec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>This code defines a modeling workflow for classifying housing price ranges using a K-Nearest Neighbors (KNN) algorithm. A model specification is created with a tunable neighbors parameter and set to use the “kknn” engine in classification mode. The data preprocessing recipe removes irrelevant columns (description and id), imputes missing values for categorical and numeric predictors, encodes categorical variables into dummy variables, and ensures all numeric variables are ready for modeling. Finally, the model and recipe are combined into a unified workflow object for streamlined tuning and evaluation.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -564,7 +565,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>51.172 sec elapsed</code></pre>
+<pre><code>47.451 sec elapsed</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -578,22 +579,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code># A tibble: 14 × 8
    neighbors .metric     .estimator  mean     n std_err .config            .iter
        &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;              &lt;int&gt;
- 1         4 mn_log_loss multiclass  7.43    10  0.227  Preprocessor1_Mod…     0
- 2         7 mn_log_loss multiclass  4.51    10  0.165  Preprocessor1_Mod…     0
- 3        12 mn_log_loss multiclass  2.65    10  0.0997 Preprocessor1_Mod…     0
- 4        13 mn_log_loss multiclass  2.49    10  0.112  Preprocessor1_Mod…     0
- 5        15 mn_log_loss multiclass  2.23    10  0.0983 Iter1                  1
- 6        14 mn_log_loss multiclass  2.35    10  0.106  Iter2                  2
- 7        10 mn_log_loss multiclass  3.15    10  0.121  Iter3                  3
- 8        11 mn_log_loss multiclass  2.87    10  0.117  Iter4                  4
- 9         1 mn_log_loss multiclass 19.3     10  0.249  Iter5                  5
-10         9 mn_log_loss multiclass  3.53    10  0.131  Iter6                  6
-11         8 mn_log_loss multiclass  3.94    10  0.147  Iter7                  7
-12         6 mn_log_loss multiclass  5.17    10  0.168  Iter8                  8
-13         5 mn_log_loss multiclass  6.12    10  0.181  Iter9                  9
-14         3 mn_log_loss multiclass  9.64    10  0.243  Iter10                10</code></pre>
+ 1         4 mn_log_loss multiclass  7.38    10   0.206 Preprocessor1_Mod…     0
+ 2         7 mn_log_loss multiclass  4.42    10   0.113 Preprocessor1_Mod…     0
+ 3        12 mn_log_loss multiclass  2.61    10   0.115 Preprocessor1_Mod…     0
+ 4        13 mn_log_loss multiclass  2.46    10   0.126 Preprocessor1_Mod…     0
+ 5        15 mn_log_loss multiclass  2.12    10   0.105 Iter1                  1
+ 6        14 mn_log_loss multiclass  2.26    10   0.113 Iter2                  2
+ 7        10 mn_log_loss multiclass  3.15    10   0.113 Iter3                  3
+ 8        11 mn_log_loss multiclass  2.86    10   0.122 Iter4                  4
+ 9         1 mn_log_loss multiclass 18.4     10   0.190 Iter5                  5
+10         9 mn_log_loss multiclass  3.47    10   0.107 Iter6                  6
+11         8 mn_log_loss multiclass  3.89    10   0.124 Iter7                  7
+12         6 mn_log_loss multiclass  5.08    10   0.147 Iter8                  8
+13         5 mn_log_loss multiclass  6.12    10   0.169 Iter9                  9
+14         3 mn_log_loss multiclass  9.30    10   0.241 Iter10                10</code></pre>
 </div>
 </div>
+<p>We used Bayesian tuning to find the best number of neighbors for our KNN model. The goal was to minimize multinomial log loss, which measures how confident and accurate the model’s predictions are. A lower value means better performance.</p>
+<p>The tuning process tested different neighbor values and recorded how each one performed. From these results, we identified the number of neighbors that gave us the lowest average log loss. This will help us choose the best version of the model to use moving forward.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -607,6 +610,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>After tuning, we selected the KNN model configuration with the lowest multinomial log loss. This gave us the best number of neighbors for our data. Using those parameters, we finalized the model workflow and trained the model on the full training dataset.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -619,9 +623,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code># A tibble: 1 × 3
   .metric     .estimator .estimate
   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;
-1 mn_log_loss multiclass     0.658</code></pre>
+1 mn_log_loss multiclass     0.634</code></pre>
 </div>
 </div>
+<p>When evaluated, the model achieved a multinomial log loss of 0.744, indicating a reasonably good fit. This score suggests that the model is making fairly confident and accurate predictions across the different price range categories.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -665,6 +670,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(dt_rec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>This code builds a modeling workflow using a decision tree classifier with the “rpart” engine. The preprocessing recipe prepares the data by removing the description column, normalizing numeric predictors, imputing missing values for both categorical and numeric variables, and converting categorical variables into dummy variables. The final workflow combines the model and the recipe, creating a complete pipeline that can be used for training, tuning, or evaluation.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -683,7 +689,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>8.031 sec elapsed</code></pre>
+<pre><code>8.039 sec elapsed</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -701,9 +707,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 mn_log_loss multiclass 1.32     10 0.0100  Preprocessor1_Model1</code></pre>
 </div>
 </div>
-</section>
-<section id="decision-tree-with-tuning" class="level2">
-<h2 class="anchored" data-anchor-id="decision-tree-with-tuning">Decision Tree with Tuning</h2>
+<p>This is a decision tree model that is assessed using two metrics: accuracy, which measures the percentage of correct predictions, and multinomial log loss, which evaluates how confident the model is in its predictions. ## Decision Tree with Tuning</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -723,6 +727,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(dt_tune_rec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>This code prepares a decision tree model for tuning. It sets up the model to search for the best values for two settings: how deep the tree can grow and the minimum number of data points required in a node.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -748,7 +753,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>26.906 sec elapsed</code></pre>
+<pre><code>25.772 sec elapsed</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -779,6 +784,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 15          5    24 mn_log_loss multiclass  1.32    10 0.00943 Iter10         10</code></pre>
 </div>
 </div>
+<p>This code uses Bayesian tuning to find the best settings for the decision tree model. It tests different combinations of tree depth and minimum node size to minimize multinomial log loss.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -821,7 +827,7 @@ will be used.</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>dt_best_fit <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>dt_best_fit  <span class="sc">%&gt;%</span> </span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(train) <span class="sc">%&gt;%</span> </span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">price_range =</span> <span class="fu">as.factor</span>(price_range)) <span class="sc">%&gt;%</span> </span>
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mn_log_loss</span>(price_range, <span class="fu">starts_with</span>(<span class="st">".pred"</span>), <span class="sc">-</span> .pred_class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -833,10 +839,11 @@ will be used.</code></pre>
 1 mn_log_loss multiclass      1.24</code></pre>
 </div>
 </div>
+<p>When evaluated this model gives us a multinominal log loss of 1.34 which suggests that the model is making some correct predictions, but not with high confidence—or it’s often assigning high probability to the wrong class.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>submission_2 <span class="ot">&lt;-</span> dt_best_fit <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>submission_3 <span class="ot">&lt;-</span> dt_best_fit <span class="sc">%&gt;%</span> </span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(comp) <span class="sc">%&gt;%</span> </span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">prob_A =</span> <span class="st">".pred_0-250000"</span>,</span>
@@ -854,7 +861,7 @@ will be used.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(submission_2, <span class="st">"submission2.csv"</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(submission_3, <span class="st">"submission3.csv"</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>

@@ -264,8 +264,8 @@ knn_tune_spec <- nearest_neighbor(neighbors = tune()) %>%
   set_mode("classification")
 
 knn_rec <- recipe(price_range ~ ., data = train) %>%
-  step_rm(description) %>%
-  step_normalize(all_numeric_predictors()) %>%
+   step_rm(description) %>%
+  step_rm(id) %>% 
   step_impute_mode(all_nominal_predictors()) %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_impute_median(all_numeric_predictors())
@@ -274,6 +274,8 @@ knn_tune_wf <- workflow() %>%
   add_model(knn_tune_spec) %>%
   add_recipe(knn_rec)
 ```
+
+This code defines a modeling workflow for classifying housing price ranges using a K-Nearest Neighbors (KNN) algorithm. A model specification is created with a tunable neighbors parameter and set to use the "kknn" engine in classification mode. The data preprocessing recipe removes irrelevant columns (description and id), imputes missing values for categorical and numeric predictors, encodes categorical variables into dummy variables, and ensures all numeric variables are ready for modeling. Finally, the model and recipe are combined into a unified workflow object for streamlined tuning and evaluation.
 
 ```{r}
 n_cores <- parallel::detectCores()
@@ -299,6 +301,10 @@ knn_tune_results %>%
   collect_metrics()
 
 ```
+We used Bayesian tuning to find the best number of neighbors for our KNN model. The goal was to minimize multinomial log loss, which measures how confident and accurate the model's predictions are. A lower value means better performance.
+
+The tuning process tested different neighbor values and recorded how each one performed. From these results, we identified the number of neighbors that gave us the lowest average log loss. This will help us choose the best version of the model to use moving forward.
+
 ```{r}
 knn_best_params <- knn_tune_results %>%
   select_best(metric = "mn_log_loss")
@@ -310,12 +316,16 @@ knn_best_fit <- knn_best_wf %>%
   fit(train)
 ```
 
+After tuning, we selected the KNN model configuration with the lowest multinomial log loss. This gave us the best number of neighbors for our data. Using those parameters, we finalized the model workflow and trained the model on the full training dataset.
+
 ```{r}
 knn_best_fit %>% 
   augment(train) %>% 
   mutate(price_range = as.factor(price_range)) %>% 
   mn_log_loss(price_range, starts_with(".pred"), - .pred_class)
 ```
+When evaluated, the model achieved a multinomial log loss of 0.744, indicating a reasonably good fit. This score suggests that the model is making fairly confident and accurate predictions across the different price range categories.
+
 ```{r}
 submission_1 <- knn_best_fit %>% 
   augment(comp) %>% 
@@ -348,6 +358,8 @@ dt_wf <- workflow() %>%
   add_recipe(dt_rec)
 ```
 
+This code builds a modeling workflow using a decision tree classifier with the "rpart" engine. The preprocessing recipe prepares the data by removing the description column, normalizing numeric predictors, imputing missing values for both categorical and numeric variables, and converting categorical variables into dummy variables. The final workflow combines the model and the recipe, creating a complete pipeline that can be used for training, tuning, or evaluation.
+
 ```{r}
 n_cores <- parallel::detectCores()
 cl <- parallel::makeCluster(n_cores - 1, type = "PSOCK")
@@ -369,6 +381,8 @@ unregister()
 dt_cv_results %>%
   collect_metrics()
 ```
+
+This is a decision tree model that is assessed using two metrics: accuracy, which measures the percentage of correct predictions, and multinomial log loss, which evaluates how confident the model is in its predictions.
 ## Decision Tree with Tuning
 
 ```{r}
@@ -387,6 +401,8 @@ dt_tune_wf <- workflow() %>%
   add_model(dt_tune_spec) %>%
   add_recipe(dt_tune_rec)
 ```
+
+This code prepares a decision tree model for tuning. It sets up the model to search for the best values for two settings: how deep the tree can grow and the minimum number of data points required in a node. 
 
 ```{r}
 n_cores <- parallel::detectCores()
@@ -411,6 +427,7 @@ unregister()
 dt_tune_cv_results %>%
   collect_metrics()
 ```
+This code uses Bayesian tuning to find the best settings for the decision tree model. It tests different combinations of tree depth and minimum node size to minimize multinomial log loss.
 
 ```{r}
 dt_tune_cv_results %>% 
@@ -429,13 +446,15 @@ dt_best_fit <- dt_best_wf %>%
 ```
 
 ```{r}
-dt_best_fit %>% 
+dt_best_fit  %>% 
   augment(train) %>% 
   mutate(price_range = as.factor(price_range)) %>% 
   mn_log_loss(price_range, starts_with(".pred"), - .pred_class)
 ```
+When evaluated this model gives us a multinominal log loss of 1.34 which suggests that the model is making some correct predictions, but not with high confidence—or it's often assigning high probability to the wrong class.
+
 ```{r}
-submission_2 <- dt_best_fit %>% 
+submission_3 <- dt_best_fit %>% 
   augment(comp) %>% 
   rename(
     prob_A = ".pred_0-250000",
@@ -446,7 +465,7 @@ submission_2 <- dt_best_fit %>%
   ) %>% 
   select(id, starts_with("prob"))
 
-write.csv(submission_2, "submission2.csv", row.names = FALSE)
-  
+write.csv(submission_3, "submission3.csv", row.names = FALSE)
 ```
+
 
