@@ -1,0 +1,42 @@
+---
+title: "MAT 434 Final Project"
+author: 
+  - name: Chloe Wright
+    email: chloe.wright4@snhu.edu
+    affiliations: 
+      - name: Southern New Hampshire University
+format: html
+date: 3/31/2025
+date-modified: today
+date-format: long
+theme: flatly
+toc: true
+code-fold: true
+---
+
+
+```{r}
+#| message: false
+
+library(tidyverse)
+library(tidymodels)
+library(kableExtra)
+library(patchwork)
+
+data <- read_csv("diabetes_prediction_dataset.csv")
+  
+names(data) <- janitor::make_clean_names(names(data))
+
+set.seed(434)
+split <- initial_split(data, prop = 0.8) 
+
+train <- training(split)
+test <- testing(split)
+
+unregister <- function() {
+  env <- foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
+
+train_folds <- vfold_cv(train, v = 10)
+```
